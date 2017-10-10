@@ -2,32 +2,33 @@ import os
 from collections import Counter
 
 path_neg = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/LargeIMDB/neg'
+
 listing = os.listdir(path_neg)
 
 
 def read_words(list_files):
 
-    vocab_set = set([])
+    vocab_list = []
 
     for eachFile in list_files:
         f = open(path_neg + "/" + eachFile, "r")
         words = f.read().split()
         f.close()
 
-        vocab_set.update(words)
+        vocab_list.append(words)
 
-    return vocab_set
+    return vocab_list
 
 
 def print_words():
     words = read_words(listing)
-    print(len(words)) # 176435
+    print(words)
+    # 12500
+    print(len(words))
 
-    freq = Counter(words)
-    print(freq)
-
-    # i = 0
     # for w in words:
+    #     freq = Counter(w)
+    #     print(freq)
     #     print(w)
 
 
@@ -40,4 +41,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
