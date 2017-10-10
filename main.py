@@ -8,24 +8,23 @@ listing = os.listdir(path_neg)
 
 def read_words(list_files):
 
-    vocab_list = []
+    vocab_set = set()
 
     for eachFile in list_files:
         f = open(path_neg + "/" + eachFile, "r")
-        words = f.read().split()
+        words = f.read()
         f.close()
 
-        vocab_list.append(words)
+        vocab_set.add(words)
 
-    return vocab_list
+    return vocab_set
 
 
 def print_words():
     words = read_words(listing)
 
     for w in words:
-        freq = Counter(w)
-        print(freq)
+        print(w)
 
 
 def main():
