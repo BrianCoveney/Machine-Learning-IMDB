@@ -1,76 +1,85 @@
 import os
-import string
 import re
-from collections import Counter
-from string import digits
 
 path_neg = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/LargeIMDB/neg'
 listing_neg = os.listdir(path_neg)
 
+path_pos = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/LargeIMDB/neg'
+listing_pos = os.listdir(path_pos)
 
-def read_words(list_files):
+
+def readWords(list_files, path):
+
+    # Initialize an empty Set
     vocab = set([])
 
     for eachFile in list_files:
-        f = open(path_neg + "/" + eachFile, "r")
-        words = remove_digits(f)
+        f = open(path + "/" + eachFile, "r", encoding='utf8')
+
+        # Clean the dataset
+        words = removeDigits(f)
         words_copy = [x.lower() for x in words]
-        f.close()
+
+        # Update the set with the dataset
         vocab.update(words_copy)
+        f.close()
 
-    vocab_copy = remove_punt(vocab)
+    # Clean the set of punctuation, etc
+    vocab_copy = removePunt(vocab)
 
-    print(vocab_copy)
+    # print(vocab_copy)
     return vocab_copy
 
 
-def remove_digits(file):
-     return file.read().replace('0', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '')\
-         .replace('5', '').replace('6', '').replace('7', '').replace('8', '').replace('9', '').split()
+def wordFreq(words_cleaned_set):
+    frequency = {}
+    for w in words_cleaned_set:
+        match_pattern = re.findall(r'\b[a-z]{3,15}\b', w)
+
+        for word in match_pattern:
+            count = frequency.get(word, 0)
+            frequency[word] = count + 1
+
+        frequency_list = frequency.keys()
+
+    word_feq_set = []
+    for words in frequency_list:
+        wd_map = words, frequency[words]
+        word_feq_set.append(wd_map)
+
+    return word_feq_set
 
 
-def word_freq(vocab):
-
-    count = {}
-
-    for word in vocab:
-        if word in count:
-            count[word] += 1
-        else:
-            count[word] = 1
-
-    neg_dict = dict.fromkeys(vocab, count)
-    # print(neg_dict)
+def removeDigits(file):
+    return file.read().replace('0', '').replace('1', '').replace('2', '').replace('3', '').replace('4', '') \
+        .replace('5', '').replace('6', '').replace('7', '').replace('8', '').replace('9', '').split()
 
 
-def remove_punt(set):
+def removePunt(set):
     set_copy = {
-    i.replace('!', '').replace(')', '').replace('(', '').replace('<br', '').replace('/>', '').replace('*', '').replace(
-        '?', '').replace('.', '').replace('"', '').replace(':', '').replace(';', '').replace(',', '').replace('/','').replace(
-        '[', '').replace('--','').replace('_','').replace('-',' ').replace('{','').replace('}','').replace('\'','')
-    for i in set}
-
+        i.replace('!', '').replace(')', '').replace('(', '').replace('<br', '').replace('/>', '').replace('*',
+                                                                                                          '').replace(
+            '?', '').replace('.', '').replace('"', '').replace(':', '').replace(';', '').replace(',', '').replace('/',
+                                                                                                                  '').replace(
+            '[', '').replace('--', '').replace('_', '').replace('-', ' ').replace('{', '').replace('}', '').replace(
+            '\'', '')
+        for i in set}
 
     return set_copy
 
 
-def print_words():
-    words = read_words(listing_neg)
-    # print("\n", len(words)) # 176435
-    # print(words)
-
-
 def main():
+    # Negative reviews
+    neg_words_cleaned_set = readWords(listing_neg, path_neg)
+    neg_words_cleaned_set_copy = set(neg_words_cleaned_set)
+    neg_word_freq_set = wordFreq(neg_words_cleaned_set_copy)
+    print(neg_word_freq_set)
 
-    read_words(listing_neg)
-
-    print_words()
-
-    words = read_words(listing_neg)
-
-    my_set = set(read_words(listing_neg))
-
-    word_freq(my_set)
+    # Positive reviews
+    # pos_words_cleaned_set = readWords(listing_pos, path_pos)
+    # pos_words_cleaned_set_copy = set(pos_words_cleaned_set)
+    # pos_word_freq_set = wordFreq(pos_words_cleaned_set_copy)
+    # print(pos_word_freq_set)
 
 
 if __name__ == "__main__":
