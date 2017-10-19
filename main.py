@@ -1,21 +1,23 @@
+#
+# Author: Brian Coveney
+#
+# Naive Bayes's Theorem
+#
+#   Calc Prior Probabilities
+#   P(c) = num of documents of class c / total num of documents
+#
+#   Naïve Bayes - Multinomial Model
+#   P(w|c) = count(w,c) + 1 / count(c)+|V|
+#
+#   count(w,c)  The num of occurrences of the word w in all documents of class c.
+#   count(c)    The total num of words in all documents of class c (incl duplicates).
+#   |V|         The number of words in the vocabulary
+#
+
 import os
 import re
 import itertools
 from math import log
-
-'''
-Naive Bayes's Theorem 
-
-            Calc Prior Probabilities 
-            P(c) = num of documents of class c / total num of documents
-
-            Naïve Bayes - Multinomial Model
-			P(w|c) = count(w,c) + 1 / count(c)+|V|
-
-			count(w,c) is the num of occurrences of the word w in all documents of class c.
-			count(c) The total num of words in all documents of class c (incl duplicates).
-			|V| THe number of words in the vocabulary
-'''
 
 path_pos = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/smallTest/pos'
 listing_pos = os.listdir(path_pos)
@@ -32,11 +34,10 @@ def readPosAndNegDocuments():
             with open(os.path.join(i, filename), 'r') as f:
                 words = f.read().lower().split()
                 vocab.update(words)
-    f.close()
 
-    print('Vocab len',len(vocab))
+    vocab_dict = dict.fromkeys(vocab, 0)
 
-    return vocab
+    return vocab_dict
 
 
 # Currently un-used
@@ -58,21 +59,16 @@ def createDictionary(listing, path):
 
 def calcProbability(wd_dict):
     words_type_dict = {}
+    vocab = readPosAndNegDocuments()
     for k, v in wd_dict.items():
 
         # Variables
-        vocab_size = sum(wd_dict.values())
+        vocab_size = sum(vocab.values())
         num_word_occur_in_class_x = wd_dict[k]
         num_words_in_class_x = sum(wd_dict.values())
 
         # Calculate the conditional probabilities in the multinominal model
-        # words_type_dict[k] = num_word_occur_in_class_x + 1 / num_words_in_class_x + vocab_size
-
-        # count(w, c) / count(c)
-        words_type_dict[k] = num_word_occur_in_class_x / num_words_in_class_x
-
-        # Plus one smoothing
-        # words_type_dict[k] = num_word_occur_in_class_x + 1 / num_words_in_class_x + 2
+        words_type_dict[k] = num_word_occur_in_class_x + 1 / num_words_in_class_x + vocab_size
 
     return words_type_dict
 
@@ -93,29 +89,9 @@ def createNegativeWordDict():
     print("Negative", prob_neg_word)
 
 
-def wordFreq(words_cleaned_set):
-    frequency = {}
-    for w in words_cleaned_set:
-        match_pattern = re.findall(r'\b[a-z]{3,15}\b', w)
-
-        for word in match_pattern:
-            count = frequency.get(word, 0)
-            frequency[word] = count + 1
-
-        frequency_list = frequency.keys()
-
-    word_feq_set = []
-    for words in frequency_list:
-        wd_map = words, frequency[words]
-        word_feq_set.append(wd_map)
-
-    return word_feq_set
-
-
 def main():
-    readPosAndNegDocuments()
     createPositiveWordDict()
-    # createNegativeWordDict()
+    createNegativeWordDict()
 
 
 if __name__ == "__main__":
