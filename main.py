@@ -17,6 +17,7 @@
 import os
 import re
 import itertools
+from collections import Counter
 from math import log, exp
 
 # training datasets
@@ -43,17 +44,14 @@ def inputNewDocument(path):
 
 
 def readPosAndNegDocuments():
-    vocab = set([])
+    vocab_dict = {}
     path = [path_pos, path_neg]
     for i in path:
         for filename in os.listdir(i):
-            with open(os.path.join(i, filename), 'r') as f:
-                words = f.read().lower().split()
-                vocab.update(words)
-
-    cleaned_vocab = preProcessWords(vocab)
-
-    vocab_dict = dict.fromkeys(cleaned_vocab, 0)
+            with open(os.path.join(i, filename), 'r', encoding='utf8') as f:
+                for line in f:
+                    for word in re.findall(r'[\w]+', line.lower()):
+                        vocab_dict[word] = vocab_dict.get(word, 0) + 1
 
     return vocab_dict
 
@@ -76,49 +74,51 @@ def createDictionary(listing, path):
 
 def calcProbability(wd_dict):
     words_type_dict = {}
+
     vocab = readPosAndNegDocuments()
-    prob_of_class_x = 0
+    vocab_size = len(vocab)
 
     for k, v in wd_dict.items():
-        vocab_size = sum(vocab.values())
-        num_word_occur_in_class_x = wd_dict[k]
-        num_words_in_class_x = sum(wd_dict.values())
 
         # Calculate the conditional probabilities in the multinominal model:
+        #
         # count(w,c) + 1 / count(c)+|V|
-        words_type_dict[k] = num_word_occur_in_class_x + 1 / num_words_in_class_x + vocab_size
+        #   count(w,c)  The num of occurrences of the word w in all documents of class c.
+        #   count(c)    The total num of words in all documents of class c (incl duplicates).
+        #   |V|         The number of words in the vocabulary
+        #
+        # Calc Prior Probabilities
+        #   P(c) = num of documents of class c / total num of documents
+        #
+        num_word_occur_in_class_x = wd_dict[k]
+        num_words_in_class_x = sum(wd_dict.values())
+        conditional_prob = (num_word_occur_in_class_x + 1) / (num_words_in_class_x + vocab_size)
 
-        # Sum of  log𝑃(𝑤|𝑐)
-        prob_of_class_x += log(words_type_dict[k])
-
-    return prob_of_class_x
-
-
-def testDocumentWithPositive():
-    log_p_of_pos = createPositiveWordDict()
-    t_dict = inputNewDocument(path_pos_test)
-    for k, v in t_dict.items():
-        t_dict[k] = log_p_of_pos
-    print('Pos', list(t_dict.values())[0])
+        words_type_dict[k] = conditional_prob
 
 
-def testDocumentWithNegative():
-    log_p_of_neg = createNegativeWordDict()
-    t_dict = inputNewDocument(path_pos_test)
-    for k, v in t_dict.items():
-        t_dict[k] = log_p_of_neg
-    print('Neg', list(t_dict.values())[0])
+    return words_type_dict
+
+
+def getNumDocsOfClassPos():
+    #   Calc Prior Probabilities
+    #   P(c) = num of documents of class c / total num of documents
+    test_pos_doc_dict = inputNewDocument(path_pos_test)
+    num_docs_of_c_pos = sum(test_pos_doc_dict.values())
+    return num_docs_of_c_pos
 
 
 def createPositiveWordDict():
     pos_wd_dict = createDictionary(listing_pos, path_pos)
     prob_pos_word = calcProbability(pos_wd_dict)
+    print(prob_pos_word)
     return prob_pos_word
 
 
 def createNegativeWordDict():
     neg_wd_dict = createDictionary(listing_neg, path_neg)
     prob_neg_word = calcProbability(neg_wd_dict)
+    print(prob_neg_word)
     return prob_neg_word
 
 
@@ -126,8 +126,6 @@ def main():
     createPositiveWordDict()
     createNegativeWordDict()
 
-    testDocumentWithPositive()
-    testDocumentWithNegative()
 
 
 if __name__ == "__main__":
