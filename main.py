@@ -46,10 +46,10 @@ def readPosAndNegDocuments(path_p, path_n):
 
 
 # Iterate over the 'pos' test document.
-# then return a dictionary with words(key) and word-frequency(value)
+# Then return a dictionary with words(key) and word-frequency(value)
 def inputNewDocument(path):
     test_new_doc_dict = {}
-    filename = os.path.join(path, '0_10.txt')
+    filename = os.path.join(path, '1_10.txt')
     with open(filename, 'r') as f:
         for line in f:
             for word in re.findall(r'[\w]+', line.lower()):
@@ -68,44 +68,52 @@ def createDictionaryForClass(listing, path):
         for line in f:
             for word in re.findall(r'[\w]+', line.lower()):
                 word_dict[word] = word_dict.get(word, 0) + 1
+
     f.close()
     return word_dict
 
 
 # Create a 'pos' dictionary
 # Then create a dictionary for the positive conditional probabilities
-def getPosConditionalProbabilities():
+def getPosConditionalProbabilitiesDict():
     pos_words_dict = createDictionaryForClass(listing_pos, path_pos)
-    prob_pos_word = calcConditionalProbabilities(pos_words_dict)
+    pos_words_dict = calcConditionalProbabilities(pos_words_dict)
+
+
 
     ###--------------------DEBUG STATEMENTS----------------------
     #
-    # print(prob_pos_word)
+    # print(pos_words_dict)
     #
     # e.g.  'bad': 0.0004860267314702309,
     #
     ###--------------------DEBUG STATEMENTS----------------------
 
-    return prob_pos_word
+    return pos_words_dict
 
 
-def getNegConditionalProbabilities():
+# Create a 'neg' dictionary
+# Then create a dictionary for the negative conditional probabilities
+def getNegConditionalProbabilitiesDict():
     neg_wd_dict = createDictionaryForClass(listing_neg, path_neg)
-    prob_neg_word = calcConditionalProbabilities(neg_wd_dict)
+    neg_words_dict = calcConditionalProbabilities(neg_wd_dict)
 
     ###--------------------DEBUG STATEMENTS----------------------
     #
-    # print(prob_neg_word)
+    # print(neg_words_dict)
     #
     # e.g.  'bad': 0.0015408802222440575,
     #
     ###--------------------DEBUG STATEMENTS----------------------
 
-    return prob_neg_word
+    # for k, v in neg_words_dict.items():
+
+    return neg_words_dict
 
 
 def preProcessWords(vocab):
     vocab = {re.sub(r'[\W_]+', '', i) for i in vocab}
+    print(type(vocab))
     return vocab
 
 
@@ -132,27 +140,62 @@ def calcConditionalProbabilities(wd_dict):
         # (Pos | word) = logP(w|c) + logP(w|c) + logP(w|c) ... = x
         # (Neg | word) = logP(w|c) + logP(w|c) + logP(w|c) ... = x
 
-        # classification += log(words_type_dict[k])
+        classification += log(words_type_dict[k])
 
-    return words_type_dict
+    # prior_prop_test_doc = testDocument()
+    # x = prior_prop_test_doc + classification
+    #
+    # print(x)
+
+    return words_type_dict, classification
 
 
-def getNumDocsOfClassPos():
+def testDocument():
+    pos_dict, classification_pos = getPosConditionalProbabilitiesDict()
+    neg_dict, classification_neg = getNegConditionalProbabilitiesDict()
+    test_pos_doc_dict = inputNewDocument(path_pos_test)
+    total_num_docs = 25000
+    count = 0
+
+    ###--------------------DEBUG STATEMENTS----------------------
+    #
+    # print("class pos", classification_pos)
+    # print("class neg", classification_neg)
+    #
+    # class pos -361968.3318638592
+    # class neg -336494.0818642115
+    #
+    ###--------------------DEBUG STATEMENTS----------------------
+
     # Calc Prior Probabilities
     #   P(c) = num of documents of class c / total num of documents
-    test_pos_doc_dict = inputNewDocument(path_pos_test)
 
-    pos_cond_prob = getPosConditionalProbabilities()
+    for key, val in test_pos_doc_dict.items():
+        for k, v in pos_dict.items():
+            if key == k:
+                count += 1
 
-    # for k, v in test_pos_doc_dict.items():
+        prior_prob = count / (total_num_docs + classification_pos)
 
-    num_docs_of_c_pos = sum(test_pos_doc_dict.values())
-    return num_docs_of_c_pos
+        print('Pos',key, prior_prob)
+
+    for key, val in test_pos_doc_dict.items():
+        for k, v in neg_dict.items():
+            if key == k:
+                count += 1
+
+        prior_prob = count / (total_num_docs + classification_neg)
+
+        print('Neg', key, prior_prob)
+
+    return prior_prob
 
 
 def main():
-    getPosConditionalProbabilities()
-    getNegConditionalProbabilities()
+    # getPosConditionalProbabilitiesDict()
+    # getNegConditionalProbabilitiesDict()
+
+    testDocument()
 
 
 if __name__ == "__main__":
