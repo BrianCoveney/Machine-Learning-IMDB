@@ -21,21 +21,20 @@ from math import log
 import numpy as np
 
 # training datasets
-path_pos = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/LargeIMDB/pos'
+path_pos = 'res/LargeIMDB/pos'
 listing_pos = os.listdir(path_pos)
 
-path_neg = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/LargeIMDB/neg'
+path_neg = 'res/LargeIMDB/neg'
 listing_neg = os.listdir(path_neg)
 
 # test dataset
-path_pos_test = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/smallTest/pos'
+path_pos_test = 'res/smallTest/pos'
 listing_pos_test = os.listdir(path_pos_test)
 
-path_neg_test = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/smallTest/neg'
+path_neg_test = 'res/smallTest/neg'
 listing_neg_test = os.listdir(path_neg_test)
 
-
-path_test_parent = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/smallTest/'
+path_test_parent = 'res/smallTest/'
 
 path_type_pos = 'pos'
 doc_to_test_pos = '14_8.txt'
@@ -59,7 +58,7 @@ def readPosAndNegDocuments(path_p, path_n):
     return vocab_pos_and_neg_dict
 
 
-# Iterate over the 'pos' test document.
+# Iterate over a test document.
 # Then return a dictionary with words(key) and word-frequency(value)
 def inputNewDocument(path_parent, path_type, doc):
     test_new_doc_dict = {}
@@ -97,23 +96,11 @@ def getPosConditionalProbabilitiesDict():
     #
     # print(pos_words_dict)
     #
-    # e.g.  'bad': 0.0004860267314702309,
+    # In IMDB_Small, 'bad': 0.0004860267314702309,
     #
     ###--------------------DEBUG STATEMENTS----------------------
 
     return pos_words_dict
-
-
-def getPosTestDocConditionalProbabilities():
-    pos_test_dict = createDictionaryForClass(listing_pos_test, path_pos_test)
-    pos_test_words_dict = calcConditionalProbabilities(pos_test_dict)
-    return pos_test_words_dict
-
-
-def getNegTestDocConditionalProbabilities():
-    neg_test_dict = createDictionaryForClass(listing_neg_test, path_neg_test)
-    neg_test_words_dict = calcConditionalProbabilities(neg_test_dict)
-    return neg_test_words_dict
 
 
 # Create a 'neg' dictionary
@@ -126,7 +113,7 @@ def getNegConditionalProbabilitiesDict():
     #
     # print(neg_words_dict)
     #
-    # e.g.  'bad': 0.0015408802222440575,
+    # In IMDB_Small, e.g.  'bad': 0.0015408802222440575,
     #
     ###--------------------DEBUG STATEMENTS----------------------
 
@@ -135,10 +122,16 @@ def getNegConditionalProbabilitiesDict():
     return neg_words_dict
 
 
-def preProcessWords(vocab):
-    vocab = {re.sub(r'[\W_]+', '', i) for i in vocab}
-    print(type(vocab))
-    return vocab
+def getPosTestDocConditionalProbabilities():
+    pos_test_dict = createDictionaryForClass(listing_pos_test, path_pos_test)
+    pos_test_words_dict = calcConditionalProbabilities(pos_test_dict)
+    return pos_test_words_dict
+
+
+def getNegTestDocConditionalProbabilities():
+    neg_test_dict = createDictionaryForClass(listing_neg_test, path_neg_test)
+    neg_test_words_dict = calcConditionalProbabilities(neg_test_dict)
+    return neg_test_words_dict
 
 
 # Pass in either a 'pos' or 'neg' directory.
@@ -170,10 +163,11 @@ def getMeanProb(dict_to_test, dict_type, conditionalProbType):
     for key, val in dict_to_test.items():
         if key in dict_type.keys():
             count += 1
-        prior_prob = log(count / total_num_docs)
-        classify = prior_prob + log(conditionalProbType)
 
-        list_prob.append(classify)
+    prior_prob = log(count / total_num_docs)
+    classify = prior_prob + log(conditionalProbType)
+
+    list_prob.append(classify)
 
     numpy_array = np.array(list_prob)
     mean = np.mean(numpy_array)
@@ -201,8 +195,8 @@ def testSinglePosDocument():
     ###--------------------DEBUG STATEMENTS----------------------
     #
     # File: pos / 1_10.txt
-    # Score(positive) : -6.51499977775
-    # Score(negative) : -6.51561472337
+    # Score(positive) : -5.17691849076
+    # Score(negative) : -5.1846006036
     # Classify document as positive
     #
     ###--------------------DEBUG STATEMENTS----------------------
@@ -230,8 +224,8 @@ def testSingleNegDocument():
     ###--------------------DEBUG STATEMENTS----------------------
     #
     # File: pos / 1_10.txt
-    # Score(positive) : -6.50959402626
-    # Score(negative) : -6.5039541065
+    # Score(positive) : -5.57886865676
+    # Score(negative) : -5.53824064385
     # Classify document as negative
     #
     ###--------------------DEBUG STATEMENTS----------------------
@@ -257,8 +251,8 @@ def testAllPosDocuments():
     ###--------------------DEBUG STATEMENTS----------------------
     #
     # Directory: pos
-    # Score(positive) : -1.51376662543
-    # Score(negative) : -1.51658725535
+    # Score(positive) : -0.564520963906
+    # Score(negative) : -0.573208678086
     # Classify document as positive
     #
     ###--------------------DEBUG STATEMENTS----------------------
@@ -292,10 +286,10 @@ def testAllNegDocuments():
 
 
 def main():
-    # testSingleDocument()
+    testSinglePosDocument()
+    # testSingleNegDocument()
     # testAllPosDocuments()
     # testAllNegDocuments()
-    testSingleNegDocument()
 
 if __name__ == "__main__":
     main()

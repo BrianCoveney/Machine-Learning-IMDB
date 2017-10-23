@@ -1,3 +1,8 @@
+# Dataset #
+###########
+res/
+*.txt
+
 # Compiled source #
 ###################
 *.com
