@@ -34,10 +34,14 @@ listing_pos_test = os.listdir(path_pos_test)
 path_neg_test = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/smallTest/neg'
 listing_neg_test = os.listdir(path_neg_test)
 
-path_pos_test_one_doc = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/smallTest/'
-listing_pos_test_one_doc = os.listdir(path_pos_test_one_doc)
-path_type = 'pos'
-doc_to_test = '1_10.txt'
+
+path_test_parent = '/home/brian/Desktop/4thYr_MachineLearning/Assignment/smallTest/'
+
+path_type_pos = 'pos'
+doc_to_test_pos = '14_8.txt'
+
+path_type_neg = 'neg'
+doc_to_test_neg = '14_1.txt'
 
 
 # Iterate over all documents and words in both directories 'pos' and 'neg'.
@@ -57,9 +61,9 @@ def readPosAndNegDocuments(path_p, path_n):
 
 # Iterate over the 'pos' test document.
 # Then return a dictionary with words(key) and word-frequency(value)
-def inputNewDocument(path, doc):
+def inputNewDocument(path_parent, path_type, doc):
     test_new_doc_dict = {}
-    filename = os.path.join(path, path_type, doc)
+    filename = os.path.join(path_parent, path_type, doc)
     with open(filename, 'r') as f:
         for line in f:
             for word in re.findall(r'[\w]+', line.lower()):
@@ -154,17 +158,6 @@ def calcConditionalProbabilities(wd_dict):
 
         words_type_dict[k] = conditional_prob
 
-        ###--------------------DEBUG STATEMENTS----------------------
-        #
-        # print(log(words_type_dict[k]))
-        #
-        # e.g. -12.422278855708885
-        #
-        ###--------------------DEBUG STATEMENTS----------------------
-
-        # (Class | word) = logP(c) + logP(w|c) + logP(w|c) ... = x
-        #
-        # logP(w|c) + logP(w|c) + logP(w|c) + ...
         classification += words_type_dict[k]
 
     return words_type_dict, classification
@@ -187,17 +180,17 @@ def getMeanProb(dict_to_test, dict_type, conditionalProbType):
     return mean
 
 
-def testSingleDocument():
-    print('File:', path_type + '/' + doc_to_test)
+def testSinglePosDocument():
+    dict_doc_to_test = inputNewDocument(path_test_parent, path_type_pos, doc_to_test_pos)
+
+    print('File:', path_test_parent + path_type_pos + '/' + doc_to_test_pos)
 
     pos_dict, sum_of_pos_prob = getPosConditionalProbabilitiesDict()
-    pos_dict_to_test = inputNewDocument(path_pos_test_one_doc, doc_to_test)
-    pos_mean = getMeanProb(pos_dict_to_test, pos_dict, sum_of_pos_prob)
+    pos_mean = getMeanProb(dict_doc_to_test, pos_dict, sum_of_pos_prob)
     print("Score(positive)  :", pos_mean)
 
     neg_dict, sum_of_neg_prob = getNegConditionalProbabilitiesDict()
-    neg_dict_to_test = inputNewDocument(path_pos_test_one_doc, doc_to_test)
-    neg_mean = getMeanProb(neg_dict_to_test, pos_dict, sum_of_neg_prob)
+    neg_mean = getMeanProb(dict_doc_to_test, neg_dict, sum_of_neg_prob)
     print("Score(negative)  :", neg_mean)
 
     if pos_mean > neg_mean:
@@ -208,23 +201,52 @@ def testSingleDocument():
     ###--------------------DEBUG STATEMENTS----------------------
     #
     # File: pos / 1_10.txt
-    # Score(positive): -6.73758748932
-    # Score(negative): -6.73820243493
+    # Score(positive) : -6.51499977775
+    # Score(negative) : -6.51561472337
     # Classify document as positive
     #
     ###--------------------DEBUG STATEMENTS----------------------
 
 
-def testAllPosDocuments():
-    print('Directory:', path_type)
-    test_dict = createDictionaryForClass(listing_pos_test, path_pos_test)
+def testSingleNegDocument():
+    dict_doc_to_test = inputNewDocument(path_test_parent, path_type_neg, doc_to_test_neg)
+
+    print('File:', path_test_parent + path_type_neg + '/' + doc_to_test_neg)
 
     pos_dict, sum_of_pos_prob = getPosConditionalProbabilitiesDict()
-    pos_mean = getMeanProb(test_dict, pos_dict, sum_of_pos_prob)
+    pos_mean = getMeanProb(dict_doc_to_test, pos_dict, sum_of_pos_prob)
     print("Score(positive)  :", pos_mean)
 
     neg_dict, sum_of_neg_prob = getNegConditionalProbabilitiesDict()
-    neg_mean = getMeanProb(test_dict, pos_dict, sum_of_neg_prob)
+    neg_mean = getMeanProb(dict_doc_to_test, neg_dict, sum_of_neg_prob)
+    print("Score(negative)  :", neg_mean)
+
+    if pos_mean > neg_mean:
+        print('Classify document as positive')
+    else:
+        print('Classify document as negative')
+
+
+    ###--------------------DEBUG STATEMENTS----------------------
+    #
+    # File: pos / 1_10.txt
+    # Score(positive) : -6.50959402626
+    # Score(negative) : -6.5039541065
+    # Classify document as negative
+    #
+    ###--------------------DEBUG STATEMENTS----------------------
+
+
+def testAllPosDocuments():
+    print('Directory: pos')
+    test_pos_dict = createDictionaryForClass(listing_pos_test, path_pos_test)
+
+    pos_dict, sum_of_pos_prob = getPosConditionalProbabilitiesDict()
+    pos_mean = getMeanProb(test_pos_dict, pos_dict, sum_of_pos_prob)
+    print("Score(positive)  :", pos_mean)
+
+    neg_dict, sum_of_neg_prob = getNegConditionalProbabilitiesDict()
+    neg_mean = getMeanProb(test_pos_dict, neg_dict, sum_of_neg_prob)
     print("Score(negative)  :", neg_mean)
 
     if pos_mean > neg_mean:
@@ -235,16 +257,45 @@ def testAllPosDocuments():
     ###--------------------DEBUG STATEMENTS----------------------
     #
     # Directory: pos
-    # Score(positive): -1.51376662543
-    # Score(negative): -1.51438157105
+    # Score(positive) : -1.51376662543
+    # Score(negative) : -1.51658725535
     # Classify document as positive
     #
     ###--------------------DEBUG STATEMENTS----------------------
 
 
+def testAllNegDocuments():
+    print('Directory: neg')
+    test_neg_dict = createDictionaryForClass(listing_neg_test, path_neg_test)
+
+    pos_dict, sum_of_pos_prob = getPosConditionalProbabilitiesDict()
+    pos_mean = getMeanProb(test_neg_dict, pos_dict, sum_of_pos_prob)
+    print("Score(positive)  :", pos_mean)
+
+    neg_dict, sum_of_neg_prob = getNegConditionalProbabilitiesDict()
+    neg_mean = getMeanProb(test_neg_dict, neg_dict, sum_of_neg_prob)
+    print("Score(negative)  :", neg_mean)
+
+    if pos_mean > neg_mean:
+        print('Classify document as positive')
+    else:
+        print('Classify document as negative')
+
+    ###--------------------DEBUG STATEMENTS----------------------
+    #
+    # Directory: pos
+    # Score(positive) : -1.50750295311
+    # Score(negative) : -1.50064233133
+    # Classify document as negative
+    #
+    ###--------------------DEBUG STATEMENTS----------------------
+
+
 def main():
-    testSingleDocument()
+    # testSingleDocument()
     # testAllPosDocuments()
+    # testAllNegDocuments()
+    testSingleNegDocument()
 
 if __name__ == "__main__":
     main()
